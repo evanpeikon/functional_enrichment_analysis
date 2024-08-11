@@ -105,3 +105,16 @@ plt.show()
 <img src="images/GO4.jpg" alt="Description" width="500" height="350">
 
 As you can see, our top GO terms include cellular components, such as collagen-containing extracellular matrix, as well as biological processes including blood vessel, vascular, and circulation system development which make sense given that we’re our data contains genes that are differentially expressed following a robust exercise stimulus. In addition to the bar graph above, there are a number of other useful visualization for GO terms including enrichment maps, gene-concept network graphs, heat maps, GO term hierarchy trees, and CIRCOS plots.
+
+# 🧬 Pathway Analysis 
+
+
+
+# 🧬 Gene Set Enrichment Analysis (GSEA)
+
+
+# 🧬 Integrating GO, Pathway Analysis, & GSEA
+
+
+
+
