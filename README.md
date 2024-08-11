@@ -11,7 +11,7 @@ Gene Ontology (GO) analysis is a bioinformatics tool that categorizes differenti
 
 While differential expression analysis identifies genes that are up- or down-regulated in response to an intervention, treatment, or drug regimen, GO analysis takes this a step further by linking these genes to broader biological contexts. By grouping genes into functional categories, GO analysis can reveal which biological processes, molecular functions, or cellular components are impacted, offering a more detailed understanding of the mechanisms through which an intervention, treatment, or drug exerts its effects.
 
-### How Is GO Analysis Used In Research?
+### How Is GO Analysis Used In Skeletal Muscle  Research?
 
 In skeletal muscle research, Gene Ontology (GO) analysis can be used to identify and categorize the biological processes affected by exercise or muscle injury. For example, after resistance training, GO analysis might show an enrichment of genes associated with muscle hypertrophy, such as those involved in "protein synthesis," "muscle fiber development," and "response to mechanical stimulus." This helps researchers understand which specific biological processes are driving muscle growth and adaptation, providing insights that can inform training protocols or therapeutic approaches to enhance muscle repair and regeneration.
 
@@ -106,15 +106,89 @@ plt.show()
 
 As you can see, our top GO terms include cellular components, such as collagen-containing extracellular matrix, as well as biological processes including blood vessel, vascular, and circulation system development which make sense given that we’re our data contains genes that are differentially expressed following a robust exercise stimulus. In addition to the bar graph above, there are a number of other useful visualization for GO terms including enrichment maps, gene-concept network graphs, heat maps, GO term hierarchy trees, and CIRCOS plots.
 
-# 🧬 Pathway Analysis 
+# 🧬 Pathway Analysis
+**What Is Pathway Analysis?**
 
+Pathway analysis is a bioinformatics method used to identify signaling and metabolic pathways that are enriched in a list of differentially expressed genes, helping us understand how genes interact within specific pathways.
 
+While similar to GO analysis, pathway analysis is more specific in that it maps differentially expressed genes to known biological pathways, such as those in KEGG or Reactome databases. This provides a detailed view of how genes function together in biological systems and can identify key pathways that are altered by treatment, which can help us understand complex biological mechanisms and identify potential therapeutic targets.
+
+**How Is Pathway Analysis Used In Skeletal Muscle Research?**
+
+In skeletal muscle research, pathway analysis can identify key pathways involved in muscle adaptation to exercise, such as the AMPK signaling pathway or the mTOR pathway. For example, after endurance training, pathway analysis might reveal the activation of oxidative phosphorylation and mitochondrial biogenesis pathways, indicating enhanced energy metabolism and mitochondrial function. This insight can help researchers understand the molecular mechanisms behind muscle endurance and guide the development of exercise regimens or nutritional strategies to optimize muscle performance.
+
+**Performing Pathway Analysis**
+
+Many of the steps involved in performing pathway analysis overlap with those from our GO analysis above. As a result, we can skip the initial steps and jump right to performing pathway analysis, using our list of significant genes (named gene_list), as demonstrated below.
+
+```python
+# perform pathway analysis
+pathway_analysis_results = gp.profile( organism='hsapiens',  query=gene_list, sources=["KEGG", "REAC"])
+
+# display the results
+print(pathway_analysis_results.head())
+```
+
+[INSERT PATWAY1]
+
+As you can see in the image above, the results of our pathway analysis are similar to GO analysis, with a few subtle differences. For example, the ```native``` column refers to the database refers to the database from which a given pathway was identified, and instead of ```name``` referring to specific cellular components or biological processes it refers to pathways that are significantly associated with the genes in our list (i.e, the genes in our sample are likely to be involved in or affect these pathways more than would be expected by chance).
+
+Now, we can visualize the top ten enriched pathways using the code below.
+
+```python
+sns.barplot(x='intersection_size', y='name', data=pathway_analysis_results.head(10))
+plt.title('Top 10 Pathways')
+plt.xlabel('Term size')
+plt.ylabel('Pathway')
+plt.show()
+```
+
+[INSERT PATH2]
+
+Notably, we’ve identified enrichment in a pathway associated with the regulation of IGF transport and uptake, which isn’t all that surprising given our data source. However, there are some unexpected results as well, such as the enrichment of a pathway associated with human papilloma virus infection. One potential reason for this may be that many cellular pathways are shared across different tissues. For instance, pathways involved in cell cycle regulation, stress responses, or apoptosis could be activated by HPV infection and might also be relevant in muscle cells. This cross-talk can lead to the identification of HPV-related pathways in seemingly unrelated tissues.
 
 # 🧬 Gene Set Enrichment Analysis (GSEA)
+**What Is Gene Set Enrichment Analysis?**
 
+Gene Set Enrichment Analysis (GSEA) is a computational technique designed to determine whether predefined sets of genes show statistically significant differences in expression between two or more biological conditions. Unlike differential expression analysis, which identifies individual genes that change significantly between conditions, GSEA evaluates the entire ranked list of genes from before and after treatment. It does not require pre-selection of differentially expressed genes. Instead, GSEA assesses whether predefined gene sets—groups of genes associated by function, pathway, or other criteria—exhibit significant, coordinated changes in expression.
+
+This method complements differential expression analysis by focusing on the enrichment of gene sets rather than changes in individual genes. It is particularly useful for detecting subtle, coordinated expression changes that might be missed when examining single genes in isolation.
+
+**How Is GSEA Used In Skeletal Muscle Research?**
+
+In the context of skeletal muscle research, GSEA can be applied to understand the broader effects of various exercise regimens or muscle-specific interventions on gene expression. For example, after a period of resistance training, GSEA might reveal significant enrichment of gene sets related to "muscle hypertrophy," "protein synthesis," or "muscle contraction." This indicates that the resistance training has led to coordinated changes in the expression of genes involved in these processes. By analyzing the entire ranked list of genes from pre- and post-training samples, GSEA can also identify whether specific biological pathways or functional gene sets are more prominently activated or repressed.
+
+However, despite the utility of GSEA, there are scenarios where it may not be necessary. For example, if your research is narrowly focused on specific biological pathways or functions, other analytical methods like Gene Ontology (GO) analysis and pathway analysis might be sufficient. For example, if your study aims to understand the effects of a particular intervention on a known pathway, such as the mTOR pathway in muscle hypertrophy, pathway analysis could directly reveal how this specific pathway is impacted. In such cases, GSEA’s broader approach might provide redundant or less relevant information, making the more targeted analyses more appropriate.
+
+**Performing GSEA**
+
+In this last section, I’ll show you how to perform GSEA. To begin, we’ll need to prepare a rank file, which is a specific format used in GSEA to represent the ordering of genes based on a quantitative score, such as a Wilcoxon rank-sum test, log fold change, or p-value.
+
+```python
+# create rank file
+rank_df = pd.DataFrame({'Gene': skeletal_muscle['names'], 'Score': skeletal_muscle['scores']})
+rank_df.set_index('Gene', inplace=True)
+```
+Then, after creating our rank file we can perform GSEA using the code below.
+```python
+# perform GSEA and view results
+gsea_results = gp.prerank(rnk=rank_df, gene_sets='KEGG_2016', permutation_num=100, seed=5)
+print(gsea_results.res2d)
+```
+[GSEA 1]
+
+In the image above we can see specific terms that were tested for enrichment in our gene list and their associated enrichment scores, which measures the degree to which a gene set (pathway) is overrepresented. A positive enrichment scores indicates that the genes in the pathway are enriched at the top of the ranked list (i.e., more significant in your sample), and that there is a stronger association of the gene set with your sample data.
+
+Additionally, pathways with high enrichment score values (close to 1) are those where the gene set is strongly enriched at the top of the ranked gene list. For example, in our results we see that the PI3K-Akt signaling pathway is highly enriched. This pathway regulated various cellular processes, including growth, proliferation, survival, and metabolism. It is activated by various growth factors and hormones, such as mTOR regulates cell growth and protein synthesis.
 
 # 🧬 Integrating GO, Pathway Analysis, & GSEA
 
+Using Gene Ontology (GO) analysis, pathway analysis, and Gene Set Enrichment Analysis (GSEA) together can provide a comprehensive understanding of single-cell RNA sequencing (scRNA-seq) data.
 
+GO analysis offers detailed functional characterization by identifying specific biological processes and functions affected by treatments. It highlights how differentially expressed genes (DEGs) are related to various biological roles. Pathway analysis, on the other hand, provides systemic insights by examining how DEGs interact within biological pathways, pinpointing key signaling and metabolic pathways influenced by the treatment. GSEA takes a broader approach, assessing gene set enrichment across the entire dataset to capture coordinated, global changes and validate findings from the other analyses.
+
+Employing all three methods can offer a more complete picture of the biological impact of treatments. While GO and pathway analyses provide specific insights into particular processes and pathways, GSEA reveals overarching trends and functional shifts. This combination of broad and specific analyses aids in generating and validating hypotheses about how treatments affect biological functions and pathways, strengthening the overall interpretation of the data.
+
+In skeletal muscle research, applying all three analyses can enhance understanding of exercise or treatment impacts. For instance, after a period of resistance training, GO analysis might reveal that differentially expressed genes are primarily involved in "muscle hypertrophy" and "protein synthesis," providing detailed functional insights. Pathway analysis could then identify key pathways such as the "mTOR signaling pathway" that are significantly altered by the training. GSEA would complement these findings by highlighting global trends, such as overall enrichment in gene sets related to "muscle growth" and "cellular stress responses," across the entire dataset. This holistic approach helps confirm that the observed specific changes in pathways and functions are part of broader, coordinated biological responses to the resistance training.
 
 
