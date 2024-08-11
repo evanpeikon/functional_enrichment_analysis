@@ -129,7 +129,7 @@ pathway_analysis_results = gp.profile( organism='hsapiens',  query=gene_list, so
 print(pathway_analysis_results.head())
 ```
 
-[INSERT PATWAY1]
+<img src="images/pathway1.jpg" alt="Description" width="500" height="350">
 
 As you can see in the image above, the results of our pathway analysis are similar to GO analysis, with a few subtle differences. For example, the ```native``` column refers to the database refers to the database from which a given pathway was identified, and instead of ```name``` referring to specific cellular components or biological processes it refers to pathways that are significantly associated with the genes in our list (i.e, the genes in our sample are likely to be involved in or affect these pathways more than would be expected by chance).
 
@@ -143,7 +143,7 @@ plt.ylabel('Pathway')
 plt.show()
 ```
 
-[INSERT PATH2]
+<img src="images/pathway2.jpg" alt="Description" width="750" height="350">
 
 Notably, we’ve identified enrichment in a pathway associated with the regulation of IGF transport and uptake, which isn’t all that surprising given our data source. However, there are some unexpected results as well, such as the enrichment of a pathway associated with human papilloma virus infection. One potential reason for this may be that many cellular pathways are shared across different tissues. For instance, pathways involved in cell cycle regulation, stress responses, or apoptosis could be activated by HPV infection and might also be relevant in muscle cells. This cross-talk can lead to the identification of HPV-related pathways in seemingly unrelated tissues.
 
@@ -175,7 +175,7 @@ Then, after creating our rank file we can perform GSEA using the code below.
 gsea_results = gp.prerank(rnk=rank_df, gene_sets='KEGG_2016', permutation_num=100, seed=5)
 print(gsea_results.res2d)
 ```
-[GSEA 1]
+<img src="images/gsea.jpg" alt="Description" width="500" height="400">
 
 In the image above we can see specific terms that were tested for enrichment in our gene list and their associated enrichment scores, which measures the degree to which a gene set (pathway) is overrepresented. A positive enrichment scores indicates that the genes in the pathway are enriched at the top of the ranked list (i.e., more significant in your sample), and that there is a stronger association of the gene set with your sample data.
 
